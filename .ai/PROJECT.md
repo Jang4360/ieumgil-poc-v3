@@ -2,7 +2,7 @@
 
 ## Identity
 
-- Name: Template Project
+- Name: poc_v3
 - Repository role: vendor-neutral AI harness template
 - Primary outcome: give new repositories a durable AI workflow, not just prompt snippets
 - Primary users: maintainers, builders, and teams starting AI-assisted software projects
