@@ -1,50 +1,71 @@
 {
-  "sprint_name": "poc_v3-adoption",
+  "sprint_name": "busan-eumgil-backend-implementation-plan",
   "updated_at": "2026-04-20",
   "summary": {
-    "planned": 5,
-    "completed": 0,
+    "planned": 8,
+    "completed": 1,
     "in_progress": 0,
-    "blocked": 0,
-    "progress_percentage": 0.0,
-    "quality_adjusted_progress": 0.0,
-    "confidence_score": 1.0
+    "blocked": 1,
+    "progress_percentage": 12.5,
+    "quality_adjusted_progress": 11.2,
+    "confidence_score": 0.9
   },
   "items": [
     {
-      "id": "HARNESS-1",
-      "title": "Customize project identity",
-      "status": "pending",
-      "stage": "Think",
-      "verification": "Update .ai/PROJECT.md and rerun verify"
+      "id": "EUM-01",
+      "title": "Set up service repository foundation",
+      "status": "completed",
+      "stage": "Build",
+      "verification": "Root service skeleton exists and compose config is coherent"
     },
     {
-      "id": "HARNESS-2",
-      "title": "Customize smoke, release, and rollback commands",
-      "status": "pending",
-      "stage": "Plan",
-      "verification": "Replace TODO(project) command slots"
+      "id": "EUM-02",
+      "title": "Build pedestrian network pipeline",
+      "status": "blocked",
+      "stage": "Build",
+      "verification": "road_nodes and road_segments load idempotently from Busan OSM"
     },
     {
-      "id": "HARNESS-3",
-      "title": "Enable guard hooks if the host runtime needs them",
+      "id": "EUM-03",
+      "title": "Fill accessibility attributes with public data ETL",
       "status": "pending",
       "stage": "Build",
-      "verification": "Wire selected guard scripts into host-specific hooks"
+      "verification": "Nine routing attributes are populated with coverage evidence"
     },
     {
-      "id": "HARNESS-4",
-      "title": "Record real metrics after initial project use",
+      "id": "EUM-04",
+      "title": "Prepare GraphHopper engine and profiles",
       "status": "pending",
-      "stage": "Test",
-      "verification": "Update .ai/EVALS/metrics.json"
+      "stage": "Build",
+      "verification": "Four profiles produce differentiated routes with LM enabled"
     },
     {
-      "id": "HARNESS-5",
-      "title": "Capture first durable learnings from live usage",
+      "id": "EUM-05",
+      "title": "Implement walk routing API",
       "status": "pending",
-      "stage": "Reflect",
-      "verification": "Promote at least one real pattern into MEMORY, EVAL, SKILL, or ADR"
+      "stage": "Build",
+      "verification": "SAFE_WALK and FAST_WALK return explicit availability and detail payloads"
+    },
+    {
+      "id": "EUM-06",
+      "title": "Load transit reference data",
+      "status": "pending",
+      "stage": "Build",
+      "verification": "Low-floor bus and subway elevator tables can be queried by orchestration"
+    },
+    {
+      "id": "EUM-07",
+      "title": "Implement accessible transit orchestration",
+      "status": "pending",
+      "stage": "Build",
+      "verification": "Accessible transit candidates are filtered and ranked with explicit reasons"
+    },
+    {
+      "id": "EUM-08",
+      "title": "Harden operations and performance readiness",
+      "status": "pending",
+      "stage": "Ship",
+      "verification": "Timeouts, health, logging, and GraphHopper swap procedure are documented and tested"
     }
   ]
 }

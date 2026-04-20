@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://maven.apache.org/surefire/maven-surefire-plugin/xsd/surefire-test-report-3.0.xsd" version="3.0" name="com.ieumgil.gh.IeumGraphhopperPluginMarkerTest" time="0.037" tests="1" errors="0" skipped="0" failures="0">
+  <properties>
+    <property name="java.specification.version" value="23"/>
+    <property name="sun.jnu.encoding" value="UTF-8"/>
+    <property name="java.class.path" value="/Users/jangjooyoon/Desktop/JooYoon/ssafy/ieumgil-poc-v3/gh-plugin/target/test-classes:/Users/jangjooyoon/Desktop/JooYoon/ssafy/ieumgil-poc-v3/gh-plugin/target/classes:/Users/jangjooyoon/.m2/repository/com/graphhopper/graphhopper-web/9.1/graphhopper-web-9.1.jar:/Users/jangjooyoon/.m2/repository/org/junit/jupiter/junit-jupiter/5.10.2/junit-jupiter-5.10.2.jar:/Users/jangjooyoon/.m2/repository/org/junit/jupiter/junit-jupiter-api/5.10.2/junit-jupiter-api-5.10.2.jar:/Users/jangjooyoon/.m2/repository/org/opentest4j/opentest4j/1.3.0/opentest4j-1.3.0.jar:/Users/jangjooyoon/.m2/repository/org/junit/platform/junit-platform-commons/1.10.2/junit-platform-commons-1.10.2.jar:/Users/jangjooyoon/.m2/repository/org/apiguardian/apiguardian-api/1.1.2/apiguardian-api-1.1.2.jar:/Users/jangjooyoon/.m2/repository/org/junit/jupiter/junit-jupiter-params/5.10.2/junit-jupiter-params-5.10.2.jar:/Users/jangjooyoon/.m2/repository/org/junit/jupiter/junit-jupiter-engine/5.10.2/junit-jupiter-engine-5.10.2.jar:/Users/jangjooyoon/.m2/repository/org/junit/platform/junit-platform-engine/1.10.2/junit-platform-engine-1.10.2.jar:"/>
+    <property name="java.vm.vendor" value="Homebrew"/>
+    <property name="sun.arch.data.model" value="64"/>
+    <property name="java.vendor.url" value="https://github.com/Homebrew/homebrew-core/issues"/>
+    <property name="os.name" value="Mac OS X"/>
+    <property name="java.vm.specification.version" value="23"/>
+    <property name="sun.java.launcher" value="SUN_STANDARD"/>
+    <property name="user.country" value="KR"/>
+    <property name="sun.boot.library.path" value="/opt/homebrew/Cellar/openjdk/23.0.2/libexec/openjdk.jdk/Contents/Home/lib"/>
+    <property name="sun.java.command" value="/Users/jangjooyoon/Desktop/JooYoon/ssafy/ieumgil-poc-v3/gh-plugin/target/surefire/surefirebooter-20260420221132175_3.jar /Users/jangjooyoon/Desktop/JooYoon/ssafy/ieumgil-poc-v3/gh-plugin/target/surefire 2026-04-20T22-11-31_700-jvmRun1 surefire-20260420221132175_1tmp surefire_0-20260420221132175_2tmp"/>
+    <property name="http.nonProxyHosts" value="local|*.local|169.254/16|*.169.254/16|127.0.0.1:21300|*.127.0.0.1:21300|lx.astxsvc.com|*.lx.astxsvc.com|127.0.0.1:21400|*.127.0.0.1:21400"/>
+    <property name="jdk.debug" value="release"/>
+    <property name="surefire.test.class.path" value="/Users/jangjooyoon/Desktop/JooYoon/ssafy/ieumgil-poc-v3/gh-plugin/target/test-classes:/Users/jangjooyoon/Desktop/JooYoon/ssafy/ieumgil-poc-v3/gh-plugin/target/classes:/Users/jangjooyoon/.m2/repository/com/graphhopper/graphhopper-web/9.1/graphhopper-web-9.1.jar:/Users/jangjooyoon/.m2/repository/org/junit/jupiter/junit-jupiter/5.10.2/junit-jupiter-5.10.2.jar:/Users/jangjooyoon/.m2/repository/org/junit/jupiter/junit-jupiter-api/5.10.2/junit-jupiter-api-5.10.2.jar:/Users/jangjooyoon/.m2/repository/org/opentest4j/opentest4j/1.3.0/opentest4j-1.3.0.jar:/Users/jangjooyoon/.m2/repository/org/junit/platform/junit-platform-commons/1.10.2/junit-platform-commons-1.10.2.jar:/Users/jangjooyoon/.m2/repository/org/apiguardian/apiguardian-api/1.1.2/apiguardian-api-1.1.2.jar:/Users/jangjooyoon/.m2/repository/org/junit/jupiter/junit-jupiter-params/5.10.2/junit-jupiter-params-5.10.2.jar:/Users/jangjooyoon/.m2/repository/org/junit/jupiter/junit-jupiter-engine/5.10.2/junit-jupiter-engine-5.10.2.jar:/Users/jangjooyoon/.m2/repository/org/junit/platform/junit-platform-engine/1.10.2/junit-platform-engine-1.10.2.jar:"/>
+    <property name="sun.cpu.endian" value="little"/>
+    <property name="user.home" value="/Users/jangjooyoon"/>
+    <property name="user.language" value="ko"/>
+    <property name="java.specification.vendor" value="Oracle Corporation"/>
+    <property name="java.version.date" value="2025-01-21"/>
+    <property name="java.home" value="/opt/homebrew/Cellar/openjdk/23.0.2/libexec/openjdk.jdk/Contents/Home"/>
+    <property name="file.separator" value="/"/>
+    <property name="basedir" value="/Users/jangjooyoon/Desktop/JooYoon/ssafy/ieumgil-poc-v3/gh-plugin"/>
+    <property name="java.vm.compressedOopsMode" value="Zero based"/>
+    <property name="line.separator" value="&#10;"/>
+    <property name="java.vm.specification.vendor" value="Oracle Corporation"/>
+    <property name="java.specification.name" value="Java Platform API Specification"/>
+    <property name="apple.awt.application.name" value="ForkedBooter"/>
+    <property name="surefire.real.class.path" value="/Users/jangjooyoon/Desktop/JooYoon/ssafy/ieumgil-poc-v3/gh-plugin/target/surefire/surefirebooter-20260420221132175_3.jar"/>
+    <property name="sun.management.compiler" value="HotSpot 64-Bit Tiered Compilers"/>
+    <property name="ftp.nonProxyHosts" value="local|*.local|169.254/16|*.169.254/16|127.0.0.1:21300|*.127.0.0.1:21300|lx.astxsvc.com|*.lx.astxsvc.com|127.0.0.1:21400|*.127.0.0.1:21400"/>
+    <property name="java.runtime.version" value="23.0.2"/>
+    <property name="user.name" value="jangjooyoon"/>
+    <property name="stdout.encoding" value="US-ASCII"/>
+    <property name="path.separator" value=":"/>
+    <property name="os.version" value="14.6.1"/>
+    <property name="java.runtime.name" value="OpenJDK Runtime Environment"/>
+    <property name="file.encoding" value="UTF-8"/>
+    <property name="java.vm.name" value="OpenJDK 64-Bit Server VM"/>
+    <property name="java.vendor.version" value="Homebrew"/>
+    <property name="localRepository" value="/Users/jangjooyoon/.m2/repository"/>
+    <property name="java.vendor.url.bug" value="https://github.com/Homebrew/homebrew-core/issues"/>
+    <property name="java.io.tmpdir" value="/var/folders/7p/t5czn5mx51n44m4wnkl2jvrc0000gn/T/"/>
+    <property name="java.version" value="23.0.2"/>
+    <property name="user.dir" value="/Users/jangjooyoon/Desktop/JooYoon/ssafy/ieumgil-poc-v3/gh-plugin"/>
+    <property name="os.arch" value="aarch64"/>
+    <property name="java.vm.specification.name" value="Java Virtual Machine Specification"/>
+    <property name="native.encoding" value="US-ASCII"/>
+    <property name="java.library.path" value="/Users/jangjooyoon/Library/Java/Extensions:/Library/Java/Extensions:/Network/Library/Java/Extensions:/System/Library/Java/Extensions:/usr/lib/java:."/>
+    <property name="java.vm.info" value="mixed mode, sharing"/>
+    <property name="stderr.encoding" value="US-ASCII"/>
+    <property name="java.vendor" value="Homebrew"/>
+    <property name="java.vm.version" value="23.0.2"/>
+    <property name="sun.io.unicode.encoding" value="UnicodeBig"/>
+    <property name="socksNonProxyHosts" value="local|*.local|169.254/16|*.169.254/16|127.0.0.1:21300|*.127.0.0.1:21300|lx.astxsvc.com|*.lx.astxsvc.com|127.0.0.1:21400|*.127.0.0.1:21400"/>
+    <property name="java.class.version" value="67.0"/>
+  </properties>
+  <testcase name="markerNameRemainsStable" classname="com.ieumgil.gh.IeumGraphhopperPluginMarkerTest" time="0.018"/>
+</testsuite>

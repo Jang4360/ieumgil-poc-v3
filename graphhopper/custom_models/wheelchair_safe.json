@@ -1,0 +1,6 @@
+{
+  "distance_influence": 40,
+  "priority": [
+    { "if": "foot_access == false", "multiply_by": "0" }
+  ]
+}

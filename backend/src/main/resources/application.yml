@@ -1,0 +1,85 @@
+spring:
+  application:
+    name: ieumgil-backend
+
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/ieumgil}
+    username: ${SPRING_DATASOURCE_USERNAME:ieumgil}
+    password: ${SPRING_DATASOURCE_PASSWORD:}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 2
+      connection-timeout: 30000
+
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+    properties:
+      hibernate:
+        jdbc:
+          batch_size: 50
+
+  data:
+    redis:
+      host: ${SPRING_DATA_REDIS_HOST:localhost}
+      port: ${SPRING_DATA_REDIS_PORT:6379}
+      password: ${SPRING_DATA_REDIS_PASSWORD:}
+      timeout: 2000ms
+      lettuce:
+        pool:
+          max-active: 8
+          min-idle: 2
+
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: ${SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI:}
+
+  jackson:
+    default-property-inclusion: non_null
+    serialization:
+      write-dates-as-timestamps: false
+    time-zone: Asia/Seoul
+
+graphhopper:
+  base-url: ${GH_BASE_URL:http://localhost:8989}
+  connect-timeout: 3000
+  read-timeout: 10000
+
+transit:
+  odsay:
+    api-key: ${TRANSIT_ODSAY_API_KEY:}
+    base-url: ${TRANSIT_ODSAY_BASE_URL:https://api.odsay.com/v1/api}
+  bims:
+    service-key: ${TRANSIT_BIMS_SERVICE_KEY:}
+    base-url: ${TRANSIT_BIMS_BASE_URL:https://apis.data.go.kr/6260000/BusanBIMS}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, metrics, prometheus, info
+  endpoint:
+    health:
+      probes:
+        enabled: true
+      show-details: when-authorized
+  metrics:
+    tags:
+      application: ${spring.application.name}
+      env: ${SPRING_PROFILES_ACTIVE:local}
+
+logging:
+  level:
+    com.ieumgil: DEBUG
+    org.springframework.security: INFO
+  pattern:
+    console: "%d{HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+
+server:
+  port: 8080
+  shutdown: graceful
