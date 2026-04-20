@@ -7,7 +7,7 @@ description: Force architecture, data flow, failure modes, trust boundaries, and
 
 ## purpose
 
-Turn product intent or an existing implementation plan into an execution-ready artifact that build, review, and QA can follow without re-inventing missing details.
+Turn product intent into an execution plan that engineers and QA can actually follow.
 
 ## when to use
 
@@ -17,40 +17,40 @@ Turn product intent or an existing implementation plan into an execution-ready a
 
 ## inputs
 
-- Existing project documents such as PRD, ERD, blueprint, and prior implementation notes
 - `.ai/PLANS/current-sprint.md`
-- `.ai/PLANS/implementation-plan-template.md`
+- Latest relevant files under `docs/PRD/`, `docs/ERD/`, and `docs/API/` when they exist
 - `.ai/ARCHITECTURE.md`
+- `.ai/DECISIONS/`
 - `.ai/EVALS/failure-patterns.md`
 - Relevant ADRs or incidents if they exist
 
 ## procedure
 
-1. Read the existing plan and supporting docs, then identify what is still vague, oversized, internally inconsistent, or missing.
-2. Map the proposed flow: trigger, data movement, state changes, storage boundaries, external dependencies, and trust boundaries.
-3. Break the work into small execution units with explicit dependencies, changed surfaces, build steps, review focus, QA path, and measurable done criteria.
-4. Convert missing tests and validation into an explicit test and validation matrix instead of leaving them as loose suggestions.
-5. Convert every risk into one of three buckets: mitigated now, execution task, or true open question that requires outside confirmation.
-6. Update `.ai/PLANS/current-sprint.md` or a linked plan artifact under `.ai/PLANS/` using the implementation plan template so build, review, and QA can consume it directly.
-7. Update `.ai/ARCHITECTURE.md` or draft an ADR when the system shape, source of truth, or trust boundary changed materially.
-8. Run `scripts/check-plan-readiness.sh` on the updated plan artifact and iterate until it passes or until a repeated blocked failure must be escalated through the circuit breaker path.
+1. Read the latest relevant files in `docs/PRD/`, `docs/ERD/`, and `docs/API/` first and treat them as the primary source for interfaces, data contracts, and domain boundaries.
+2. Map the proposed flow: trigger, data movement, state changes, and external boundaries.
+3. Split the work into executable workstreams, preferably by domain, API surface, UI slice, job, or operational boundary.
+4. Define success criteria and a verification strategy for each workstream, not just for the request as a whole.
+5. Identify failure modes, race conditions, stale state risks, and trust boundaries.
+6. Read `.ai/DECISIONS/` and keep the plan aligned with any architecture or product decisions already recorded there.
+7. Detect whether the repository already has a usable app framework; if it does not, force a separate setup workstream before feature work.
+8. For spec-driven work, keep subplans anchored to cited docs; for change-driven work, restate the requested behavior and derive workstreams from impacted boundaries instead of inventing one giant plan.
+9. Document implementation constraints, subplan boundaries, and open questions in `.ai/PLANS/current-sprint.md` and the relevant subplan files.
+10. Update `.ai/ARCHITECTURE.md` or draft an ADR when the system shape changes.
 
 ## outputs
 
-- Revised implementation plan artifact
+- Engineering review notes
 - Data flow and failure mode summary
 - Trust boundary notes
-- Test and validation matrix
-- Review and QA handoff sections
-- Explicit risk register and open question list
+- Test strategy
+- Workstream split with per-workstream success criteria
 
 ## escalation rules
 
-- Escalate only when the architecture depends on unvalidated external assumptions, when a product or source-of-truth decision is genuinely missing, or when repeated plan rewrites still fail readiness and the circuit breaker opens.
-- Do not stop at listing tests, validations, or mitigations when they can be added to the plan artifact immediately.
+- Escalate if the architecture depends on assumptions that are not yet validated.
+- Escalate if production risk is high and no rollback or monitoring path exists.
 
 ## handoff rules
 
 - Hand off to `plan-design-review` if UX states still need clarification.
-- Hand off to build skills only after the execution units, test matrix, and risk register are explicit enough to execute.
-- Hand off to `review` and `qa` with the updated plan artifact as the canonical brief, not with an isolated chat summary.
+- Hand off to build skills once architecture and test strategy are explicit enough to execute.

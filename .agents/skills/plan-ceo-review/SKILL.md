@@ -26,15 +26,16 @@ Pressure-test the plan from a product and scope perspective before code starts.
 1. Read the current framing and identify the proposed wedge.
 2. Ask whether the wedge is strong enough to matter for the target user.
 3. Challenge scope with three lenses: stronger wedge, simpler first version, and dangerous distractions.
-4. Record the recommended scope position in `.ai/PLANS/current-sprint.md`.
-5. Push deferred but relevant work into `.ai/PLANS/backlog.md` or `.ai/PLANS/roadmap.md`.
+4. Make success criteria explicit enough that build and validation can tell what counts as a successful outcome.
+5. Record the recommended scope position in `.ai/PLANS/current-sprint.md`.
+6. Push deferred but relevant work into `.ai/PLANS/backlog.md` or `.ai/PLANS/roadmap.md`.
 
 ## outputs
 
 - Scope recommendation
 - Product wedge critique
 - Explicit non-goals and deferred opportunities
-- Updated sprint plan with product rationale
+- Updated sprint plan with product rationale and success criteria
 
 ## escalation rules
 

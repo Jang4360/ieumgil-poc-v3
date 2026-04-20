@@ -25,7 +25,6 @@ Next steps:
 - update .ai/PLANS/progress.json and .ai/EVALS/metrics.json
 - replace TODO(project) command slots in .ai/RUNBOOKS/
 - adjust .ai/ADAPTERS/codex/hooks.json if you want repo-local Codex hook behavior, then rerun scripts/sync-adapters.sh
-- use scripts/codex-preflight.sh and scripts/codex-review-brief.sh if Codex will implement and Claude will review
-- use scripts/check-plan-readiness.sh after refining project plans into execution-ready artifacts
+- use scripts/codex-preflight.sh for Codex sessions; use deliver-change for implementation-plus-validation and scripts/review-brief.sh only when validation moves to another host
 - run scripts/verify.sh
 EOF

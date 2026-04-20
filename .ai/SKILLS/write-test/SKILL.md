@@ -19,18 +19,21 @@ Strengthen confidence around a behavior, regression, or boundary.
 
 - Target behavior or failure mode
 - Existing test layout
+- `.ai/EVALS/exception-checklist.md`
 - Plan or review notes that describe what matters
 
 ## procedure
 
 1. Define the exact behavior or risk the test must cover.
 2. Prefer the smallest test that still exercises the real contract.
-3. Cover happy path, edge case, or regression as required by the task.
-4. Record important uncovered gaps in `.ai/PLANS/current-sprint.md` if they remain.
+3. Cover the happy path plus the highest-risk edge and failure paths that apply to the contract.
+4. Prefer explicit assertions for error contracts, retries, empty states, stale state, permission failure, or dependency failure when those are part of the risk.
+5. Record important uncovered gaps in `.ai/PLANS/current-sprint.md` if they remain.
 
 ## outputs
 
 - New or improved test coverage
+- Explicit failure-path coverage where it matters
 - Explicit note about what is still untested if applicable
 
 ## escalation rules
@@ -40,4 +43,5 @@ Strengthen confidence around a behavior, regression, or boundary.
 
 ## handoff rules
 
-- Hand off to `review` or `qa` depending on whether the risk is mostly code-level or flow-level.
+- Hand off to `validate-change` when the test work is part of a broader change that still needs review or flow validation.
+- Hand off to `review` or `qa` directly only when a narrower one-stage check is intentionally sufficient.

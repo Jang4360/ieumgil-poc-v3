@@ -18,22 +18,26 @@ Execute planned feature work while keeping implementation tied to durable artifa
 
 - Approved plan in `.ai/PLANS/current-sprint.md`
 - `.ai/ARCHITECTURE.md`
+- `.ai/EVALS/exception-checklist.md`
 - Relevant tests and runbooks
 
 ## procedure
 
 1. Restate the approved feature scope and non-goals.
 2. Before mutating shell state, run `scripts/check-dangerous-command.sh "<command>"`. Before editing implementation files, run `scripts/check-tdd-guard.sh --mode pre <candidate paths>`.
-3. Implement the smallest coherent slice that satisfies the plan.
-4. Add or update tests as the feature is built.
-5. If the same implementation attempt fails repeatedly, run `scripts/record-retry.sh <signature>` and `scripts/check-circuit-breaker.sh <signature>` before retrying again.
-6. Record any material plan deviation in `.ai/PLANS/current-sprint.md`.
-7. Update architecture or runbooks if the change alters system behavior.
+3. Identify the failure assumptions that matter for the slice: invalid input, empty state, missing dependency, conflict, permission problem, timeout, stale state, and recovery path as applicable.
+4. Implement the smallest coherent slice that satisfies the plan and handles the applicable failure assumptions explicitly instead of falling back to generic crashes or silent failure.
+5. Add or update tests as the feature is built. Cover the intended path plus the highest-risk edge and failure paths for the slice.
+6. If a failure path is intentionally deferred, record it as explicit risk or accepted gap in `.ai/PLANS/current-sprint.md` instead of leaving it implicit.
+7. If the same implementation attempt fails repeatedly, run `scripts/record-retry.sh <signature>`. If it opens the circuit breaker, stop retrying the same path and hand off to `learn`.
+8. Record any material plan deviation in `.ai/PLANS/current-sprint.md`.
+9. Update architecture or runbooks if the change alters system behavior, error contracts, or operator recovery steps.
 
 ## outputs
 
 - Feature implementation
 - Tests for intended behavior
+- Explicit failure-path handling or recorded accepted gap
 - Updated sprint artifact if the build revealed meaningful changes
 
 ## escalation rules
@@ -43,4 +47,4 @@ Execute planned feature work while keeping implementation tied to durable artifa
 
 ## handoff rules
 
-- Hand off to `review` and then `qa` once the implementation is coherent.
+- Hand off to `validate-change` once the implementation is coherent.

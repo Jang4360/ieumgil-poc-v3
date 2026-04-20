@@ -75,9 +75,9 @@ print("- After failed attempts: scripts/record-retry.sh <signature>")
 print("- Before another repeated attempt: scripts/check-circuit-breaker.sh <signature>")
 
 print("")
-print("Review Route")
-print("- Implement in Codex with AGENTS.md and .agents/skills/")
-print("- Hand off review with scripts/codex-review-brief.sh and then use Claude review flow")
+print("Validation Route")
+print("- Implement, review, and QA in the same host when that is the simplest credible path")
+print("- If another host should validate, use validate-change with a cross-host route; it generates the handoff brief via scripts/review-brief.sh as part of its procedure")
 
 if warnings:
     print("")

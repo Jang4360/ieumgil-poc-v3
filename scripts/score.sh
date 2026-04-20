@@ -19,7 +19,7 @@ def emit(points, earned, label, message):
 verify_ok = (root / "scripts" / "verify.sh").exists()
 if verify_ok:
     import subprocess
-    result = subprocess.run([str(root / "scripts" / "verify.sh")], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    result = subprocess.run(["bash", str(root / "scripts" / "verify.sh")], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     if result.returncode == 0:
         score += 2
         emit(2, 2, "structure", "canonical files, json artifacts, and adapters verify")

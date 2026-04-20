@@ -31,9 +31,11 @@ required_files=(
   ".ai/PLANS/roadmap.md"
   ".ai/PLANS/backlog.md"
   ".ai/PLANS/current-sprint.md"
-  ".ai/PLANS/implementation-plan-template.md"
+  ".ai/PLANS/subplan-template.md"
+  ".ai/PLANS/current-sprint/README.md"
   ".ai/PLANS/progress.json"
   ".ai/EVALS/done-criteria.md"
+  ".ai/EVALS/exception-checklist.md"
   ".ai/EVALS/smoke-checklist.md"
   ".ai/EVALS/failure-patterns.md"
   ".ai/EVALS/scorecard.md"
@@ -47,14 +49,17 @@ required_files=(
   "scripts/verify.sh"
   "scripts/smoke.sh"
   "scripts/score.sh"
+  "scripts/detect-project-stack.sh"
+  "scripts/scaffold-specs.sh"
+  "scripts/scaffold-plan.sh"
   "scripts/dashboard.sh"
   "scripts/check-tdd-guard.sh"
   "scripts/check-dangerous-command.sh"
   "scripts/check-circuit-breaker.sh"
-  "scripts/check-plan-readiness.sh"
   "scripts/codex-hook-session-start.sh"
   "scripts/codex-preflight.sh"
   "scripts/codex-review-brief.sh"
+  "scripts/review-brief.sh"
   "scripts/hook-pre-edit.sh"
   "scripts/record-retry.sh"
   "scripts/record-promotion.sh"
@@ -77,13 +82,17 @@ required_skills=(
   "plan-ceo-review"
   "plan-eng-review"
   "plan-design-review"
+  "author-specs"
+  "plan-workstreams"
   "autoplan"
+  "deliver-change"
   "implement-feature"
   "fix-bug"
   "refactor-module"
   "write-test"
   "review"
   "investigate"
+  "validate-change"
   "qa"
   "qa-only"
   "design-review"
@@ -115,19 +124,53 @@ for file in "${required_files[@]}"; do
   fi
 done
 
+required_plan_sections=(
+  "## Goal"
+  "## Success Criteria"
+  "## Workstream Index"
+)
+
+for section in "${required_plan_sections[@]}"; do
+  if ! grep -q "^${section}$" "$ROOT_DIR/.ai/PLANS/current-sprint.md"; then
+    echo "missing sprint section '$section' in .ai/PLANS/current-sprint.md" >&2
+    exit 1
+  fi
+done
+
+required_subplan_sections=(
+  "## Goal"
+  "## Success Criteria"
+  "## Implementation Plan"
+  "## Validation Plan"
+  "## Handoff"
+)
+
+while IFS= read -r plan_file; do
+  [[ -z "$plan_file" ]] && continue
+  for section in "${required_subplan_sections[@]}"; do
+    if ! grep -q "^${section}$" "$plan_file"; then
+      echo "missing subplan section '$section' in ${plan_file#$ROOT_DIR/}" >&2
+      exit 1
+    fi
+  done
+done < <(find "$ROOT_DIR/.ai/PLANS/current-sprint" -mindepth 1 -maxdepth 1 -type f -name '*.md' ! -name 'README.md' | sort)
+
 required_executables=(
   "scripts/sync-adapters.sh"
   "scripts/verify.sh"
   "scripts/smoke.sh"
   "scripts/score.sh"
+  "scripts/detect-project-stack.sh"
+  "scripts/scaffold-specs.sh"
+  "scripts/scaffold-plan.sh"
   "scripts/dashboard.sh"
   "scripts/check-tdd-guard.sh"
   "scripts/check-dangerous-command.sh"
   "scripts/check-circuit-breaker.sh"
-  "scripts/check-plan-readiness.sh"
   "scripts/codex-hook-session-start.sh"
   "scripts/codex-preflight.sh"
   "scripts/codex-review-brief.sh"
+  "scripts/review-brief.sh"
   "scripts/hook-pre-edit.sh"
   "scripts/record-retry.sh"
   "scripts/record-promotion.sh"

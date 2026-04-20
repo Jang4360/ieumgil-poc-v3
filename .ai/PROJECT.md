@@ -12,7 +12,7 @@
 - Canonical workflow documentation
 - Canonical memory and evaluation artifacts
 - Canonical skills for planning, delivery, validation, release, and learning
-- Generated adapters for Claude and Codex hosts
+- Generated adapters for Claude, Codex, and future host runtimes without fixing stage ownership to one model
 
 ## What this template does not own
 

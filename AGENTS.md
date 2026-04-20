@@ -11,6 +11,7 @@ Use this repository as a disciplined AI harness template for real software deliv
 - Do not edit `.claude/skills/` or `.agents/skills/` by hand unless you are debugging the sync process.
 - Do not commit `.claude/settings.local.json`.
 - For Codex implementation sessions, treat `AGENTS.md` and `.agents/skills/` as the primary enforcement surface. `.codex/hooks.json` is only a minimal advisory adapter.
+- Do not hard-code stage ownership to a single AI vendor or model. Plan, build, review, QA, and ship stages may run in the same host or be handed across hosts as long as canonical artifacts and guard rules stay intact.
 - When a skill changes, update `.ai/SKILLS/` first and then run `scripts/sync-adapters.sh`.
 - Keep markdown additive, parse-friendly, and easy to diff.
 - Prefer explicit assumptions, failure modes, and acceptance criteria over vague guidance.
@@ -23,6 +24,8 @@ Use this repository as a disciplined AI harness template for real software deliv
 - Start new work by reading `.ai/PROJECT.md`, `.ai/ARCHITECTURE.md`, and `.ai/WORKFLOW.md`.
 - Use the sprint loop: Think -> Plan -> Build -> Review -> Test -> Ship -> Reflect.
 - Planning outputs should be durable enough that build and QA can consume them without re-interpreting the original request.
+- Prefer `deliver-change` when you want one entrypoint that carries implementation through validation instead of stopping at a raw diff.
+- Prefer `validate-change` as the default validation entrypoint. Use `review`, `qa`, or `qa-only` directly only when a narrower report is intentionally needed.
 - If a change alters architecture, document the delta in `.ai/ARCHITECTURE.md` or add an ADR.
 - If a failure repeats, capture it in `.ai/MEMORY/` or `.ai/EVALS/failure-patterns.md`.
 - If a procedure repeats, consider promoting it into a skill.
@@ -35,13 +38,12 @@ Use this repository as a disciplined AI harness template for real software deliv
 - Run `scripts/update-progress.sh` after changing item statuses in `progress.json` to keep summary counts in sync.
 - Run `scripts/update-metrics.sh` after retry, promotion, blocker, or readiness state changes.
 - At the start of a Codex implementation session, run `scripts/codex-preflight.sh` if the host hook did not show it automatically.
-- After `plan-eng-review` or `autoplan`, run `scripts/check-plan-readiness.sh` on the updated plan artifact and keep refining until it passes or an external blocker is explicitly recorded.
 - Before a mutating shell command, run `scripts/check-dangerous-command.sh "<command>"`.
 - Before editing production implementation files, run `scripts/check-tdd-guard.sh --mode pre <candidate paths>`.
-- After a failed attempt that may repeat, run `scripts/record-retry.sh <signature>`. Before the next repeated attempt, run `scripts/check-circuit-breaker.sh <signature>`.
+- After a failed attempt that may repeat, run `scripts/record-retry.sh <signature>`. It refreshes metrics and automatically opens the circuit breaker when the retry threshold is hit. Use `scripts/check-circuit-breaker.sh <signature>` directly only for preflight checks or external automation.
 - Run `scripts/smoke.sh` once project-specific smoke commands are customized.
 - Run `scripts/dashboard.sh` when you need a visible summary of progress, risk, and harness health.
-- When Codex implementation is ready for Claude review, run `scripts/codex-review-brief.sh` and hand off that summary with the diff.
+- When validation moves to another AI host, run `scripts/review-brief.sh` and hand off that summary with the diff. Same-host review through `validate-change` is also valid.
 - Update relevant runbooks when build, release, rollback, or local setup expectations change.
 
 ## Done criteria
@@ -60,6 +62,8 @@ A change is not done until all of the following are true:
 - Use canonical skills in `.ai/SKILLS/` as the design source.
 - Use adapter skills only as host-specific entrypoints.
 - Prefer extending an existing skill when the workflow belongs to an existing stage.
+- Prefer orchestration skills such as `autoplan`, `deliver-change`, and `validate-change` when the task should span multiple stages without relying on chat memory.
+- Treat `review`, `qa`, and `qa-only` as supporting skills for narrower checks; the default validation route is still `validate-change`.
 - Add a new skill only when the task shape is recurring and meaningfully distinct.
 - Dashboard and promotion behavior should read canonical artifacts instead of inventing parallel state.
 

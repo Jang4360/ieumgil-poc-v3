@@ -30,3 +30,15 @@ PY
 
 "$ROOT_DIR/scripts/update-metrics.sh" >/dev/null
 echo "retry recorded: $SIGNATURE"
+
+set +e
+"$ROOT_DIR/scripts/check-circuit-breaker.sh" "$SIGNATURE"
+status=$?
+set -e
+
+if [[ "$status" -eq 2 ]]; then
+  echo "next-step: invoke learn immediately in this same pass — signature='$SIGNATURE' — do not retry this path again"
+  exit 2
+fi
+
+exit "$status"

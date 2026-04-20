@@ -11,6 +11,7 @@ Provide an independent QA report without mixing testing and implementation in th
 
 ## when to use
 
+- Inside `validate-change` when an independent QA report is needed
 - When a pure test report is preferred
 - When code changes are blocked or should be separated from validation
 
@@ -18,19 +19,23 @@ Provide an independent QA report without mixing testing and implementation in th
 
 - Current change and release candidate context
 - `.ai/EVALS/smoke-checklist.md`
+- `.ai/EVALS/exception-checklist.md`
 - Relevant review notes
 
 ## procedure
 
 1. Select the highest-value flows for the release.
-2. Execute them and collect evidence.
-3. Report bugs, inconsistencies, and risk areas in `.ai/PLANS/current-sprint.md`.
-4. Update score or readiness notes if the report changes release confidence.
+2. Build a narrow exception-path matrix for those flows: happy path, highest-risk failure path, and recovery path at minimum.
+3. Execute them and collect evidence.
+4. Report bugs, inconsistencies, risk areas, and untested exception paths in `.ai/PLANS/current-sprint.md`.
+5. Update score or readiness notes if the report changes release confidence.
+6. If the same blocked validation path repeats, run `scripts/record-retry.sh <signature>`. If it opens the circuit breaker, hand off to `learn`.
 
 ## outputs
 
 - QA report without code changes
 - Bug list and risk list
+- Exception-path report
 
 ## escalation rules
 

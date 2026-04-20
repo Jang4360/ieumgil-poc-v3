@@ -1,6 +1,6 @@
 ---
 name: dashboard
-description: Summarize current progress, risk, promotion activity, and harness health from canonical structured artifacts.
+description: Open a visual dashboard from plan checklists and core risk or health signals.
 ---
 
 # dashboard
@@ -24,17 +24,17 @@ Make repository progress and harness quality state visible without relying on ch
 
 ## procedure
 
-1. Read the structured progress and metric artifacts.
-2. Summarize totals, in-progress work, blocked work, quality signals, and recent promotions.
-3. Surface the most important remaining risks and next actions.
-4. If the dashboard reveals stale state, update the canonical artifacts before relying on the summary.
+1. Run `scripts/dashboard.sh` so the dashboard is generated from the current canonical artifacts instead of from chat memory.
+2. Treat checklist items in `.ai/PLANS/current-sprint.md` as the primary board data for counts, progress, success, and failure state.
+3. Use `.ai/EVALS/metrics.json` and retry or promotion logs as secondary health and risk overlays.
+4. If the dashboard reveals stale or missing checklist state, update `.ai/PLANS/current-sprint.md` and re-run `scripts/dashboard.sh` before relying on the summary.
 
 ## outputs
 
-- Current progress summary
-- Risk summary
-- Harness health summary
-- Recommended next actions
+- Visual dashboard opened in the browser
+- Checklist totals, progress counts, success rate, and failure rate
+- Risk list when real risk exists
+- Followable next actions
 
 ## escalation rules
 

@@ -6,6 +6,7 @@ Generated from `.ai/SKILLS/`.
 
 - Expose repository skills to Codex through `.agents/skills/`.
 - Keep `.agents/` focused on skill discovery, because Codex already reads root `AGENTS.md`.
+- Keep stage ownership in the canonical skills instead of assuming Codex is build-only.
 
 ## Note
 

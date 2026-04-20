@@ -8,44 +8,51 @@ Think -> Plan -> Build -> Review -> Test -> Ship -> Reflect
 
 The automation-oriented execution shape is:
 
-request or event -> classification -> doc and skill loading -> planning -> implementation -> evaluation -> risk summary -> promotion -> scoring -> dashboard update
+request or event -> classification -> doc and skill loading -> planning -> implementation -> validation -> risk summary -> promotion -> scoring -> dashboard update
 
 ## Stage contracts
 
 ### Think
 
-- Primary skills: `office-hours`
+- Primary skills: `author-specs`, `office-hours`
 - Goal: turn vague intent into a sharper problem definition, wedge, user, and non-goals
-- Main outputs: updated framing in `.ai/PLANS/current-sprint.md` and relevant backlog or roadmap adjustments
+- Main outputs: versioned PRD, ERD, API docs when needed, plus updated framing in `.ai/PLANS/current-sprint.md`, explicit success criteria, and initial workstream boundaries
 - Handoff: planning stages inherit the clarified problem instead of the original loose request
 
 ### Plan
 
-- Primary skills: `plan-ceo-review`, `plan-eng-review`, `plan-design-review`, `autoplan`
+- Primary skills: `plan-ceo-review`, `plan-eng-review`, `plan-design-review`, `plan-workstreams`, `autoplan`
 - Goal: challenge scope, architecture, interaction quality, failure modes, trust boundaries, and test strategy before implementation
-- Main outputs: reusable plan sections in `.ai/PLANS/current-sprint.md` or a linked implementation plan artifact, explicit execution units, test and validation matrix, risk register, optional ADR drafts, backlog or roadmap deltas
+- Main outputs: reusable checklist-based sprint index sections in `.ai/PLANS/current-sprint.md`, workstream subplans under `.ai/PLANS/current-sprint/`, optional ADR drafts, backlog or roadmap deltas
+- Planning helpers: `scripts/scaffold-specs.sh` can bootstrap versioned docs under `docs/PRD`, `docs/ERD`, and `docs/API`, and `scripts/scaffold-plan.sh` can bootstrap or refresh the sprint index and workstream files from those docs plus `.ai/DECISIONS/`
 - Handoff: build, review, and QA consume these artifacts directly
 
 ### Build
 
-- Primary skills: `implement-feature`, `fix-bug`, `refactor-module`, `write-test`, `investigate`
+- Primary skills: `deliver-change`, `implement-feature`, `fix-bug`, `refactor-module`, `write-test`, `investigate`
 - Goal: execute against an approved plan with clear boundaries and evidence
-- Main outputs: code changes, tests, and implementation notes recorded in sprint artifacts when behavior or scope changed
-- Handoff: review inherits the approved plan, not just the diff
+- Main outputs: code changes, happy-path plus failure-path tests, and implementation notes recorded in sprint artifacts when behavior or scope changed
+- Handoff: `deliver-change` continues directly into validation; pure build skills hand off to `validate-change` so review inherits the approved plan, not just the diff
 
 ### Review
 
-- Primary skills: `review`, `design-review`, `security-review`
+- Primary skills: `validate-change`, `design-review`, `security-review`
 - Goal: inspect correctness, maintainability, product integrity, and risk
 - Main outputs: findings, resolved risks, open questions, and review notes linked from `.ai/PLANS/current-sprint.md`
-- Handoff: QA and release should consume unresolved risks explicitly
+- Handoff: `validate-change` is the default validation entrypoint and aggregates code review findings plus downstream QA and release risks
 
 ### Test
 
-- Primary skills: `qa`, `qa-only`, `benchmark`
+- Primary skills: `validate-change`, `benchmark`
 - Goal: verify real user flows, failure cases, and performance expectations
-- Main outputs: bug and risk reports, smoke-check references, scorecard updates, regression notes
-- Handoff: ship consumes readiness status rather than assuming tests passed means production-ready
+- Main outputs: bug and risk reports, tested exception-path notes, smoke-check references, scorecard updates, regression notes
+- Handoff: ship consumes readiness status from `validate-change`, QA, and benchmarks rather than assuming tests passed means production-ready
+
+## Validation rule
+
+- Default validation command: `validate-change`
+- Supporting validation sub-skills: `review`, `qa`, `qa-only`, `design-review`, `security-review`, `benchmark`
+- Use supporting validation skills directly only when a narrower report is more useful than the combined validation gate
 
 ### Ship
 
@@ -63,7 +70,12 @@ request or event -> classification -> doc and skill loading -> planning -> imple
 
 ## Artifact movement
 
+- Product and contract specs live under `docs/PRD/`, `docs/ERD/`, and `docs/API/`, with versioned filenames such as `_v1`, `_v2`, and so on.
 - Product framing and approved plans live in `.ai/PLANS/`.
+- `current-sprint.md` should act as the sprint index, containing top-level success criteria, workstream links, and followable checklist items using `[ ]`, `[~]`, `[x]`, and `[!]`.
+- `.ai/PLANS/current-sprint/` should contain workstream-level plan files with explicit `Success Criteria`, `Implementation Plan`, and `Validation Plan` sections.
+- Planning should read the latest relevant versions in `docs/PRD/`, `docs/ERD/`, and `docs/API/` first, then supporting `docs/` files and `.ai/DECISIONS/`.
+- Exception and failure-path expectations live in `.ai/EVALS/exception-checklist.md` and should be pulled into both implementation and validation work.
 - Structured task state lives in `.ai/PLANS/progress.json`.
 - Quality gates and recurring failure knowledge live in `.ai/EVALS/`.
 - Structured quality and readiness metrics live in `.ai/EVALS/metrics.json`.
@@ -76,7 +88,7 @@ request or event -> classification -> doc and skill loading -> planning -> imple
 
 - Production edits should pass through the TDD guard before automation is allowed to treat them as ready.
 - Shell execution should pass through the dangerous command guard before automation executes high-risk commands.
-- Repeated equivalent failures should pass through the circuit breaker before more retries are attempted.
+- Repeated equivalent failures should be logged through `scripts/record-retry.sh`, which refreshes metrics and opens the circuit breaker before more retries are attempted.
 
 ## Promotion paths
 
@@ -89,5 +101,3 @@ request or event -> classification -> doc and skill loading -> planning -> imple
 ## Operating rule
 
 If a stage creates output that another stage will need later, store it in `.ai/` instead of leaving it in transient chat context.
-
-Planning is not done when it only lists gaps. Planning is done when executable tasks, measurable done criteria, validation work, and unresolved external blockers are separated into durable artifacts.

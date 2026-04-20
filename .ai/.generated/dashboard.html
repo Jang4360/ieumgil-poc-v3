@@ -1,0 +1,420 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>하네스 대시보드</title>
+  <style>
+    :root {
+      --bg: #f6f4ee;
+      --panel: #ffffff;
+      --ink: #1f261f;
+      --muted: #728072;
+      --line: rgba(26, 42, 27, 0.09);
+      --green-900: #173b20;
+      --green-800: #21562d;
+      --green-700: #2f6b39;
+      --green-500: #4f9b5f;
+      --green-200: #d8ecd9;
+      --gray-100: #f3f5f1;
+      --gray-200: #e6ebe4;
+      --blue-100: #e8f0ff;
+      --blue-700: #2c59c4;
+      --danger: #b85d3d;
+      --warning: #c88d31;
+      --shadow: 0 20px 48px rgba(24, 38, 22, 0.08);
+      --radius-xl: 28px;
+      --radius-lg: 22px;
+      --radius-md: 18px;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Segoe UI", "Noto Sans KR", sans-serif;
+      background:
+        radial-gradient(circle at top left, rgba(79, 155, 95, 0.12), transparent 26%),
+        linear-gradient(180deg, #fbfcf8 0%, var(--bg) 100%);
+      color: var(--ink);
+      min-height: 100vh;
+    }
+    .shell {
+      width: min(1340px, calc(100vw - 40px));
+      margin: 22px auto 36px;
+      display: grid;
+      gap: 18px;
+    }
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-xl);
+      box-shadow: var(--shadow);
+    }
+    .panel-body { padding: 22px; }
+    .panel-title {
+      margin: 0 0 16px;
+      font-size: 17px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .panel-count {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--muted);
+      background: var(--gray-100);
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 3px 10px;
+    }
+
+    /* ── Hero ── */
+    .hero { padding: 26px 28px 22px; display: grid; gap: 18px; }
+    .hero-top { display: flex; justify-content: space-between; gap: 16px; align-items: flex-start; flex-wrap: wrap; }
+    .hero-title { margin: 0; font-size: clamp(28px, 4vw, 42px); line-height: 1; font-weight: 700; }
+    .hero-goal { margin-top: 8px; color: var(--muted); line-height: 1.5; max-width: 72ch; }
+    .hero-badge { padding: 10px 16px; border-radius: 999px; background: var(--gray-100); border: 1px solid var(--line); font-size: 14px; color: var(--green-900); white-space: nowrap; }
+    .summary-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; }
+    .metric-card { border-radius: var(--radius-lg); padding: 18px; border: 1px solid var(--line); background: var(--gray-100); }
+    .metric-card.accent { background: linear-gradient(180deg, var(--green-800), var(--green-900)); color: white; border-color: transparent; }
+    .metric-label { font-size: 13px; color: var(--muted); margin-bottom: 14px; }
+    .metric-card.accent .metric-label { color: rgba(255,255,255,0.72); }
+    .metric-value { font-size: clamp(26px, 3vw, 40px); font-weight: 700; line-height: 1; }
+
+    /* ── 2-col grid ── */
+    .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+    .grid-wide { display: grid; grid-template-columns: 1.25fr 0.75fr; gap: 18px; }
+
+    /* ── Success Criteria ── */
+    .sc-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+    .sc-item {
+      display: grid;
+      grid-template-columns: 24px 1fr;
+      gap: 10px;
+      align-items: start;
+      padding: 12px 14px;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--line);
+      background: var(--gray-100);
+    }
+    .sc-item.done { background: #f0f8f0; border-color: var(--green-200); }
+    .sc-item.doing { background: #f0f4ff; border-color: #c5d3f8; }
+    .sc-item.failed { background: #fff4f0; border-color: #f0c8bb; }
+    .sc-icon {
+      width: 24px; height: 24px;
+      display: grid; place-items: center;
+      border-radius: 50%;
+      font-size: 13px; font-weight: 700;
+      background: var(--gray-200); color: var(--muted);
+      flex-shrink: 0;
+    }
+    .sc-item.done .sc-icon { background: var(--green-200); color: var(--green-900); }
+    .sc-item.doing .sc-icon { background: var(--blue-100); color: var(--blue-700); }
+    .sc-item.failed .sc-icon { background: #f5d5c8; color: var(--danger); }
+    .sc-title { font-size: 14px; line-height: 1.45; padding-top: 4px; }
+
+    /* ── Workstream ── */
+    .ws-list { display: grid; gap: 10px; }
+    .ws-item {
+      display: grid;
+      grid-template-columns: 12px 1fr auto;
+      gap: 12px;
+      align-items: center;
+      padding: 14px 16px;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--line);
+      background: var(--gray-100);
+    }
+    .ws-item.done { background: #f0f8f0; border-color: var(--green-200); }
+    .ws-item.doing { background: #f0f4ff; border-color: #c5d3f8; }
+    .ws-item.failed { background: #fff4f0; border-color: #f0c8bb; }
+    .ws-dot { width: 12px; height: 12px; border-radius: 50%; background: var(--gray-200); flex-shrink: 0; }
+    .ws-item.done .ws-dot { background: var(--green-500); }
+    .ws-item.doing .ws-dot { background: var(--blue-700); }
+    .ws-item.failed .ws-dot { background: var(--danger); }
+    .ws-name { font-size: 14px; font-weight: 600; }
+    .ws-desc { font-size: 13px; color: var(--muted); margin-top: 3px; line-height: 1.4; }
+    .ws-badge {
+      font-size: 12px; font-weight: 600;
+      padding: 4px 10px; border-radius: 999px;
+      background: var(--gray-200); color: var(--muted);
+      white-space: nowrap;
+    }
+    .ws-item.done .ws-badge { background: var(--green-200); color: var(--green-900); }
+    .ws-item.doing .ws-badge { background: var(--blue-100); color: var(--blue-700); }
+    .ws-item.failed .ws-badge { background: #f5d5c8; color: var(--danger); }
+
+    /* ── Stage Progress ── */
+    .progress-layout { display: grid; grid-template-columns: 200px 1fr; gap: 20px; align-items: center; }
+    .gauge-wrap { display: grid; place-items: center; }
+    .gauge {
+      width: 190px; aspect-ratio: 1; border-radius: 50%;
+      background:
+        radial-gradient(circle at center, white 0 56%, transparent 57%),
+        conic-gradient(var(--green-800) 0deg 0deg, #dfe6dd 0deg 360deg);
+      display: grid; place-items: center;
+    }
+    .gauge-inner { display: grid; place-items: center; text-align: center; gap: 4px; }
+    .gauge-value { font-size: 40px; font-weight: 800; line-height: 1; color: var(--green-900); }
+    .gauge-caption { font-size: 12px; color: var(--muted); }
+    .mini-stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+    .mini-card { border-radius: var(--radius-md); padding: 14px 16px; border: 1px solid var(--line); background: var(--gray-100); }
+    .mini-label { font-size: 12px; color: var(--muted); margin-bottom: 8px; }
+    .mini-value { font-size: 26px; font-weight: 700; line-height: 1; }
+
+    /* ── Risk ── */
+    .risk-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+    .risk-item {
+      display: grid; grid-template-columns: 12px 1fr; gap: 12px;
+      padding: 14px 16px; border-radius: var(--radius-lg);
+      border: 1px solid var(--line); background: var(--gray-100);
+    }
+    .risk-dot { width: 12px; height: 12px; border-radius: 50%; margin-top: 4px; background: var(--warning); }
+    .risk-item.danger .risk-dot { background: var(--danger); }
+    .risk-title { font-weight: 700; margin-bottom: 4px; }
+    .risk-detail { color: var(--muted); font-size: 14px; line-height: 1.45; }
+    .empty-risk { border-radius: var(--radius-lg); border: 1px dashed var(--line); padding: 18px; background: #fbfcfa; }
+    .empty-risk-title { font-weight: 700; margin-bottom: 6px; }
+    .empty-risk-detail { color: var(--muted); font-size: 14px; line-height: 1.45; }
+    .empty-panel { color: var(--muted); font-size: 14px; line-height: 1.6; padding: 8px 0; }
+
+    /* ── Next Actions ── */
+    .next-actions { display: grid; gap: 10px; }
+    .action-card {
+      display: grid; grid-template-columns: 48px 1fr auto;
+      gap: 14px; align-items: center;
+      padding: 14px 16px; border-radius: var(--radius-lg);
+      border: 1px solid var(--line);
+      background: linear-gradient(180deg, #ffffff, #f6f8f4);
+    }
+    .action-index {
+      width: 48px; height: 48px; display: grid; place-items: center;
+      border-radius: 14px; background: var(--green-900); color: white;
+      font-weight: 700; font-size: 15px;
+    }
+    .action-title { font-weight: 700; margin-bottom: 4px; }
+    .action-detail { color: var(--muted); font-size: 13px; line-height: 1.45; }
+    .action-skill {
+      padding: 7px 12px; border-radius: 999px;
+      background: var(--green-200); color: var(--green-900);
+      font-size: 12px; font-weight: 600; white-space: nowrap;
+    }
+
+    /* ── Performance ── */
+    .performance-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+
+    /* ── Responsive ── */
+    @media (max-width: 1100px) {
+      .grid2, .grid-wide { grid-template-columns: 1fr; }
+      .summary-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+    @media (max-width: 700px) {
+      .progress-layout { grid-template-columns: 1fr; }
+      .mini-stats, .performance-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .summary-grid { grid-template-columns: 1fr; }
+      .action-card { grid-template-columns: 48px 1fr; }
+      .action-skill { grid-column: 2; justify-self: start; }
+    }
+  </style>
+</head>
+<body>
+  <main class="shell">
+
+    <!-- Hero -->
+    <section class="panel hero">
+      <div class="hero-top">
+        <div>
+          <h1 class="hero-title">대시보드</h1>
+          <div class="hero-goal">스프린트: <strong>template-adoption</strong><br>템플릿을 실제 저장소에 적용하면서 엔드투엔드 워크플로를 유지한다.</div>
+        </div>
+        <div class="hero-badge">업데이트 2026-04-20 </div>
+      </div>
+      <section class="summary-grid">
+        
+    <article class="metric-card accent">
+      <div class="metric-label">성공 기준</div>
+      <div class="metric-value">0 / 4</div>
+    </article>
+    <article class="metric-card neutral">
+      <div class="metric-label">워크스트림</div>
+      <div class="metric-value">0 / 4</div>
+    </article>
+    <article class="metric-card neutral">
+      <div class="metric-label">Stage 완료</div>
+      <div class="metric-value">0 / 11</div>
+    </article>
+    <article class="metric-card neutral">
+      <div class="metric-label">하네스 상태</div>
+      <div class="metric-value">100</div>
+    </article>
+      </section>
+    </section>
+
+    <!-- Success Criteria | Workstream Index -->
+    <section class="grid2">
+      <section class="panel panel-body">
+        <h2 class="panel-title">
+          성공 기준
+          <span class="panel-count">0 / 4 달성</span>
+        </h2>
+        <ul class='sc-list'>
+      <li class="sc-item todo">
+        <span class="sc-icon">○</span>
+        <span class="sc-title">상위 스프린트 문서는 목표, 성공 기준, 작업 분해, 리스크를 분명히 보여준다.</span>
+      </li>
+      <li class="sc-item todo">
+        <span class="sc-icon">○</span>
+        <span class="sc-title">의미 있는 작업 단위마다 별도 세부 계획 파일이 존재한다.</span>
+      </li>
+      <li class="sc-item todo">
+        <span class="sc-icon">○</span>
+        <span class="sc-title">각 세부 계획 파일은 구현과 검증 스킬이 바로 사용할 수 있는 성공 기준과 검증 계획을 담고 있다.</span>
+      </li>
+      <li class="sc-item todo">
+        <span class="sc-icon">○</span>
+        <span class="sc-title">계획은 `docs/` 명세가 있으면 이를 우선 입력으로 삼고, 없으면 요청과 코드 구조를 기준으로 작업을 분해한다.</span>
+      </li></ul>
+      </section>
+      <section class="panel panel-body">
+        <h2 class="panel-title">
+          워크스트림
+          <span class="panel-count">0 / 4 완료</span>
+        </h2>
+        <div class='ws-list'>
+      <div class="ws-item todo">
+        <div class="ws-dot"></div>
+        <div class="ws-info">
+          <div class="ws-name">project-identity</div>
+          <div class="ws-desc">템플릿 기본값을 실제 프로젝트 정체성으로 교체</div>
+        </div>
+        <div class="ws-badge">대기</div>
+      </div>
+      <div class="ws-item todo">
+        <div class="ws-dot"></div>
+        <div class="ws-info">
+          <div class="ws-name">commands-and-runbooks</div>
+          <div class="ws-desc">smoke·release·rollback 명령을 실제 프로젝트 기준으로 정의</div>
+        </div>
+        <div class="ws-badge">대기</div>
+      </div>
+      <div class="ws-item todo">
+        <div class="ws-dot"></div>
+        <div class="ws-info">
+          <div class="ws-name">host-routing-and-guards</div>
+          <div class="ws-desc">호스트별 가드·훅 라우팅 확인 및 설정</div>
+        </div>
+        <div class="ws-badge">대기</div>
+      </div>
+      <div class="ws-item todo">
+        <div class="ws-dot"></div>
+        <div class="ws-info">
+          <div class="ws-name">metrics-and-learning</div>
+          <div class="ws-desc">실사용 메트릭 수집 후 첫 번째 패턴 canonical 승격</div>
+        </div>
+        <div class="ws-badge">대기</div>
+      </div></div>
+      </section>
+    </section>
+
+    <!-- Stage Progress | Risks -->
+    <section class="grid-wide">
+      <section class="panel panel-body">
+        <h2 class="panel-title">Stage 진행 현황</h2>
+        <div class="progress-layout">
+          <div class="gauge-wrap">
+            <div class="gauge">
+              <div class="gauge-inner">
+                <div class="gauge-value">0.0%</div>
+                <div class="gauge-caption">Stage 완료율</div>
+              </div>
+            </div>
+          </div>
+          <div class="mini-stats">
+            <article class="mini-card">
+              <div class="mini-label">시작됨</div>
+              <div class="mini-value">0</div>
+            </article>
+            <article class="mini-card">
+              <div class="mini-label">대기 중</div>
+              <div class="mini-value">11</div>
+            </article>
+            <article class="mini-card">
+              <div class="mini-label">하네스 상태</div>
+              <div class="mini-value">100</div>
+            </article>
+          </div>
+        </div>
+      </section>
+      <section class="panel panel-body">
+        <h2 class="panel-title">리스크</h2>
+        
+    <div class="empty-risk">
+      <div class="empty-risk-title">현재 주요 리스크 없음</div>
+      <div class="empty-risk-detail">체크리스트와 메트릭에서 즉시 처리할 위험 신호는 보이지 않습니다.</div>
+    </div>
+      </section>
+    </section>
+
+    <!-- Next Actions | Performance -->
+    <section class="grid2">
+      <section class="panel panel-body">
+        <h2 class="panel-title">다음 작업</h2>
+        <div class="next-actions">
+          
+      <article class="action-card">
+        <div class="action-index">01</div>
+        <div class="action-main">
+          <div class="action-title">다음 시작 항목: 제품의 핵심 가치와 대상 사용자를 명확히 한다.</div>
+          <div class="action-detail">사고 단계의 첫 작업으로 진행하세요.</div>
+        </div>
+        <div class="action-skill">office-hours</div>
+      </article>
+      <article class="action-card">
+        <div class="action-index">02</div>
+        <div class="action-main">
+          <div class="action-title">다음 시작 항목: 범용으로 유지할 것과 프로젝트 전용으로 바꿀 것을 구분한다.</div>
+          <div class="action-detail">사고 단계의 첫 작업으로 진행하세요.</div>
+        </div>
+        <div class="action-skill">office-hours</div>
+      </article>
+      <article class="action-card">
+        <div class="action-index">03</div>
+        <div class="action-main">
+          <div class="action-title">다음 시작 항목: 프로젝트 전용 smoke, release, rollback 명령을 정의한다.</div>
+          <div class="action-detail">계획 단계의 첫 작업으로 진행하세요.</div>
+        </div>
+        <div class="action-skill">autoplan</div>
+      </article>
+      <article class="action-card">
+        <div class="action-index">04</div>
+        <div class="action-main">
+          <div class="action-title">smoke 커맨드 설정</div>
+          <div class="action-detail">scripts/smoke.sh에 실제 프로젝트 smoke 검증 커맨드를 연결하세요.</div>
+        </div>
+        <div class="action-skill">dashboard</div>
+      </article>
+        </div>
+      </section>
+      <section class="panel panel-body">
+        <h2 class="panel-title">성과 지표</h2>
+        <section class="performance-grid">
+          
+    <article class="metric-card neutral">
+      <div class="metric-label">성공률</div>
+      <div class="metric-value">0.0%</div>
+    </article>
+    <article class="metric-card neutral">
+      <div class="metric-label">실패율</div>
+      <div class="metric-value">0.0%</div>
+    </article>
+    <article class="metric-card neutral">
+      <div class="metric-label">반복 실패 수</div>
+      <div class="metric-value">0</div>
+    </article>
+        </section>
+      </section>
+    </section>
+
+  </main>
+</body>
+</html>

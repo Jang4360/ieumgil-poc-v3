@@ -2,17 +2,22 @@
 
 > **작성일:** 2026-04-12  
 > **작성자:** 김응서  
-> **최종 수정일:** 2026-04-16
+> **최종 수정일:** 2026-04-20
 
 ---
 
 ## 1. 설계 기준
 
 - 기준 문서: `2026-04-10 최종_프로젝트_기획서.md`, `2026-04-11_MVP_화면명세서.md`, `2026-04-09_기능명세서.md`, `2026-04-16_ACCESSIBLE_ROUTING_POC_RESTART_BLUEPRINT.md`
-- `created_at`, `updated_at`은 JPA Auditing 기반 `BaseEntity` 공통 컬럼으로 관리하므로 테이블별 상세 명세에서는 생략한다.
-- soft delete가 필요하면 `deleted_at`도 공통 컬럼으로 관리한다.
-- 숫자 ID를 참조하는 외래키 컬럼은 자동 증가 컬럼이 아니므로 `BIGSERIAL`이 아니라 `BIGINT`로 표기한다.
+- `createdAt`, `updatedAt`은 JPA Auditing 기반 `BaseEntity` 공통 컬럼으로 관리하므로 테이블별 상세 명세에서는 생략한다.
+- 회원 탈퇴는 물리 삭제 대신 soft delete를 기본으로 하며, 필요 시 `deletedAt`을 공통 컬럼으로 관리한다.
+- 모든 컬럼 네이밍은 `camelCase`를 사용한다.
+- 숫자 ID를 참조하는 외래키 컬럼은 자동 증가 컬럼이 아니므로 `SERIAL/BIGSERIAL`이 아니라 `INT/BIGINT`로 표기한다.
+- PK는 테이블별 데이터 증가량 기준으로 구분한다. 대량 적재 또는 로그성 테이블은 `BIGINT`, 일반 관리성 테이블은 `INT`를 우선 검토한다.
 - 사용자 식별자인 `users.userId`는 API 응답, JWT subject, FK에서 모두 UUID를 사용한다. 순차 ID 노출과 IDOR 위험을 줄이기 위해 별도 내부 숫자 PK를 두지 않는다.
+- 시간 데이터는 DB에 표시용 문자열 형식으로 저장하며, `VARCHAR` 컬럼에 ISO 8601 기반 문자열을 저장하는 것을 기본 원칙으로 한다.
+- 변경 가능성이 있거나 운영 중 값 집합이 늘어날 수 있는 비즈니스 필드는 DB ENUM 대신 `VARCHAR`를 사용한다.
+- `roadSegments`의 접근성/보행 상태처럼 라우팅 로직에서 사용하는 고정된 폐쇄 집합 값은 ENUM 사용을 허용하되, `surfaceState`처럼 분류 기준이 확장될 수 있는 필드는 `VARCHAR`를 사용한다.
 - 지도/장소 검색 API는 MVP 기준 카카오 단일 사용을 전제로 한다. 외부 장소 ID는 `places.providerPlaceId`로 관리한다.
 - 대중교통 경로 후보는 ODsay 같은 외부 대중교통 길찾기 API를 우선 사용하고, 버스/저상버스 정보는 부산광역시_부산버스정보시스템 OpenAPI를 실시간 조회한다. 저상버스 예약은 백엔드 API로 제공하지 않고, 필요하면 프론트에서 부산시버스정보시스템 외부 화면으로 직접 연결하므로 MVP 기준 별도 DB 테이블을 두지 않는다.
 
@@ -64,124 +69,128 @@ erDiagram
     PLACES ||--o{ BOOKMARKS : bookmarked
     PLACES ||--o{ PLACE_ACCESSIBILITY_FEATURES : has
 
-    ROAD_NODES ||--o{ ROAD_SEGMENTS : from_node
-    ROAD_NODES ||--o{ ROAD_SEGMENTS : to_node
+    ROAD_NODES ||--o{ ROAD_SEGMENTS : fromNode
+    ROAD_NODES ||--o{ ROAD_SEGMENTS : toNode
     ROAD_SEGMENTS ||--o{ SEGMENT_FEATURES : has
     ROUTE_LOGS ||--o{ ROUTE_LOG_POINTS : has
 
     USERS {
         UUID userId PK
         VARCHAR nickname
-        ENUM social_provider
-        VARCHAR social_provider_user_id
-        ENUM disability_type
-        VARCHAR disability_grade
-        VARCHAR phone_number
-        BOOLEAN location_terms_agreed
-        TIMESTAMPTZ location_terms_agreed_at
-        BOOLEAN tts_enabled
-        BOOLEAN route_collection_enabled
-        BOOLEAN push_enabled
+        VARCHAR socialProvider
+        VARCHAR socialProviderUserId
+        VARCHAR disabilityType
+        VARCHAR disabilityGrade
+        VARCHAR phoneNumber
+        BOOLEAN locationTermsAgreed
+        VARCHAR locationTermsAgreedAt
+        BOOLEAN ttsEnabled
+        BOOLEAN routeCollectionEnabled
+        BOOLEAN pushEnabled
     }
 
     BOOKMARKS {
-        BIGSERIAL bookmarkId PK
+        INT bookmarkId PK
         UUID userId FK
-        BIGINT placeId FK
+        INT placeId FK
     }
 
     FAVORITE_ROUTES {
-        BIGSERIAL favRouteId PK
-        VARCHAR route_name
-        VARCHAR start_label
-        VARCHAR end_label
-        GEOMETRY start_point
-        GEOMETRY end_point
-        ENUM route_option
+        INT favRouteId PK
+        VARCHAR routeName
+        VARCHAR startLabel
+        VARCHAR endLabel
+        GEOMETRY startPoint
+        GEOMETRY endPoint
+        VARCHAR routeOption
         UUID userId FK
     }
 
     HAZARD_REPORTS {
-        BIGSERIAL reportId PK
-        ENUM report_type
+        INT reportId PK
+        VARCHAR reportType
         TEXT description
-        GEOMETRY report_point
+        GEOMETRY reportPoint
         VARCHAR address
-        ENUM status
+        VARCHAR status
     }
 
     HAZARD_REPORT_IMAGES {
-        BIGSERIAL reportImgId PK
-        TEXT image_url
-        SMALLINT display_order
-        BIGINT reportId FK
+        INT reportImgId PK
+        TEXT imageUrl
+        SMALLINT displayOrder
+        INT reportId FK
     }
 
     PLACES {
-        BIGSERIAL placeId PK
+        INT placeId PK
         VARCHAR name
-        ENUM category
+        VARCHAR category
         VARCHAR address
         GEOMETRY point
         VARCHAR providerPlaceId
     }
 
     PLACE_ACCESSIBILITY_FEATURES {
-        BIGSERIAL id PK
-        BIGINT placeId FK
-        VARCHAR feature_type
-        BOOLEAN is_available
+        INT id PK
+        INT placeId FK
+        VARCHAR featureType
+        BOOLEAN isAvailable
     }
 
     ROAD_NODES {
-        BIGSERIAL vertexId PK
-        BIGINT osm_node_id
+        BIGINT vertexId PK
+        BIGINT osmNodeId
         GEOMETRY point
     }
 
     ROAD_SEGMENTS {
-        BIGSERIAL edgeId PK
-        BIGINT from_node_id FK
-        BIGINT to_node_id FK
+        BIGINT edgeId PK
+        BIGINT fromNodeId FK
+        BIGINT toNodeId FK
         GEOMETRY geom
-        NUMERIC length_meter
-        BIGINT source_way_id
-        BIGINT source_osm_from_node_id
-        BIGINT source_osm_to_node_id
-        INT segment_ordinal
-        NUMERIC avg_slope_percent
-        NUMERIC width_meter
-        VARCHAR walk_access
-        ENUM crossing_state
-        ENUM width_state
-        ENUM surface_state
+        NUMERIC lengthMeter
+        BIGINT sourceWayId
+        BIGINT sourceOsmFromNodeId
+        BIGINT sourceOsmToNodeId
+        INT segmentOrdinal
+        NUMERIC avgSlopePercent
+        NUMERIC widthMeter
+        VARCHAR walkAccess
+        ENUM brailleBlockState
+        ENUM audioSignalState
+        ENUM curbRampState
+        ENUM widthState
+        VARCHAR surfaceState
+        ENUM stairsState
+        ENUM elevatorState
+        ENUM crossingState
     }
 
     SEGMENT_FEATURES {
-        BIGSERIAL feature_id PK
-        BIGINT edge_id FK
-        VARCHAR feature_type
+        BIGINT featureId PK
+        BIGINT edgeId FK
+        VARCHAR featureType
         GEOMETRY geom
         JSONB value
     }
 
     ROUTE_LOGS {
-        BIGSERIAL routeLogId PK
-        ENUM disability_type
-        ENUM route_option
-        TIMESTAMPTZ started_at
-        TIMESTAMPTZ ended_at
-        NUMERIC distance_meter
-        %% route_option: SAFE_WALK, FAST_WALK, ACCESSIBLE_TRANSIT
+        BIGINT routeLogId PK
+        VARCHAR disabilityType
+        VARCHAR routeOption
+        VARCHAR startedAt
+        VARCHAR endedAt
+        NUMERIC distanceMeter
     }
 
     ROUTE_LOG_POINTS {
-        BIGSERIAL routeLogPointId PK
+        BIGINT routeLogPointId PK
         BIGINT routeLogId FK
         INT sequence
         GEOMETRY point
-        TIMESTAMPTZ recorded_at
-        NUMERIC accuracy_meter
+        VARCHAR recordedAt
+        NUMERIC accuracyMeter
     }
 
     LOW_FLOOR_BUS_ROUTES {
@@ -191,7 +200,7 @@ erDiagram
     }
 
     SUBWAY_STATION_ELEVATORS {
-        BIGSERIAL elevatorId PK
+        INT elevatorId PK
         VARCHAR stationId
         VARCHAR stationName
         VARCHAR lineName
@@ -221,32 +230,28 @@ erDiagram
 | --- | --- | --- | --- | --- |
 | 사용자 PK | userId | UUID | NOT NULL |  |
 | 닉네임 | nickname | VARCHAR(50) | NULL |  |
-| 소셜 제공자 | social_provider | ENUM | NOT NULL |  |
-| 소셜 사용자 ID | social_provider_user_id | VARCHAR(100) | NOT NULL |  |
-| 장애 유형 | disability_type | ENUM | NULL |  |
-| 장애 등급 | disability_grade | VARCHAR(20) | NULL |  |
-| 전화번호 | phone_number | VARCHAR(20) | NOT NULL | 119 |
-| 위치 약관 동의 여부 | location_terms_agreed | BOOLEAN | NOT NULL | false |
-| 위치 약관 동의 일시 | location_terms_agreed_at | TIMESTAMPTZ | NULL |  |
-| 음성 안내 여부 | tts_enabled | BOOLEAN | NOT NULL | true |
-| 경로 데이터 수집 동의 여부 | route_collection_enabled | BOOLEAN | NOT NULL | false |
-| 푸시 알림 여부 | push_enabled | BOOLEAN | NOT NULL | true |
-
-### enum 값
-
-- `social_provider`: `KAKAO`, `NAVER`, `GOOGLE`
-- `disability_type`: `VISUAL`, `MOBILITY`
+| 소셜 제공자 | socialProvider | VARCHAR(30) | NOT NULL |  |
+| 소셜 사용자 ID | socialProviderUserId | VARCHAR(100) | NOT NULL |  |
+| 장애 유형 | disabilityType | VARCHAR(30) | NULL |  |
+| 장애 등급 | disabilityGrade | VARCHAR(20) | NULL |  |
+| 전화번호 | phoneNumber | VARCHAR(20) | NOT NULL | 119 |
+| 위치 약관 동의 여부 | locationTermsAgreed | BOOLEAN | NOT NULL | false |
+| 위치 약관 동의 일시 | locationTermsAgreedAt | VARCHAR(30) | NULL |  |
+| 음성 안내 여부 | ttsEnabled | BOOLEAN | NOT NULL | true |
+| 경로 데이터 수집 동의 여부 | routeCollectionEnabled | BOOLEAN | NOT NULL | false |
+| 푸시 알림 여부 | pushEnabled | BOOLEAN | NOT NULL | true |
 
 ### 제약
 
-- `UNIQUE (social_provider, social_provider_user_id)`
+- `UNIQUE (socialProvider, socialProviderUserId)`
 
 ### 비고
 
 - `nickname`은 실명 대신 사용하는 표시용 이름이며 중복을 허용한다.
-- 최초 소셜 로그인 직후에는 프로필 입력이 완료되지 않았을 수 있으므로 `nickname`과 `disability_type`은 `NULL`을 허용한다.
-- 회원가입 완료 상태는 `nickname IS NOT NULL`이고 `disability_type IS NOT NULL`인 경우로 판단한다.
-- `disability_type IS NULL`인 사용자는 프로필 미완료 상태이며, 서비스 핵심 기능을 이용할 수 없다.
+- 최초 소셜 로그인 직후에는 프로필 입력이 완료되지 않았을 수 있으므로 `nickname`과 `disabilityType`은 `NULL`을 허용한다.
+- 회원가입 완료 상태는 `nickname IS NOT NULL`이고 `disabilityType IS NOT NULL`인 경우로 판단한다.
+- `disabilityType IS NULL`인 사용자는 프로필 미완료 상태이며, 서비스 핵심 기능을 이용할 수 없다.
+- 회원 탈퇴는 물리 삭제 대신 soft delete를 기본으로 하며, 동일 사용자 재가입 시 기존 계정 복구 또는 재활성화 정책을 별도로 둔다.
 - `userId`는 외부 응답과 JWT subject에도 사용되는 UUID다. 사용자 조회/수정 API는 임의의 `userId`를 요청값으로 받지 않고 `/users/me`와 토큰 subject를 기준으로 처리한다.
 
 ---
@@ -263,9 +268,9 @@ erDiagram
 
 | 한글명 | 영어명 | 타입 | NULL | DEFAULT |
 | --- | --- | --- | --- | --- |
-| 북마크 ID | bookmarkId | BIGSERIAL | NOT NULL |  |
+| 북마크 ID | bookmarkId | INT | NOT NULL |  |
 | 사용자 PK | userId | UUID | NOT NULL |  |
-| 장소 ID | placeId | BIGINT | NOT NULL |  |
+| 장소 ID | placeId | INT | NOT NULL |  |
 
 ### 비고
 
@@ -287,18 +292,20 @@ erDiagram
 
 | 한글명 | 영어명 | 타입 | NULL | DEFAULT |
 | --- | --- | --- | --- | --- |
-| 자주 가는 길 ID | favRouteId | BIGSERIAL | NOT NULL |  |
-| 경로명 | route_name | VARCHAR(100) | NOT NULL |  |
-| 출발지명 | start_label | VARCHAR(255) | NOT NULL |  |
-| 도착지명 | end_label | VARCHAR(255) | NOT NULL |  |
-| 출발지 좌표 | start_point | GEOMETRY(POINT, 4326) | NOT NULL |  |
-| 도착지 좌표 | end_point | GEOMETRY(POINT, 4326) | NOT NULL |  |
-| 경로 종류 | route_option | ENUM | NOT NULL | SAFE_WALK |
+| 자주 가는 길 ID | favRouteId | INT | NOT NULL |  |
+| 경로명 | routeName | VARCHAR(100) | NOT NULL |  |
+| 출발지명 | startLabel | VARCHAR(255) | NOT NULL |  |
+| 도착지명 | endLabel | VARCHAR(255) | NOT NULL |  |
+| 출발지 좌표 | startPoint | GEOMETRY(POINT, 4326) | NOT NULL |  |
+| 도착지 좌표 | endPoint | GEOMETRY(POINT, 4326) | NOT NULL |  |
+| 경로 종류 | routeOption | VARCHAR(30) | NOT NULL | SAFE_WALK |
 | 사용자 PK | userId | UUID | NOT NULL |  |
 
-### enum 값
+### routeOption 후보값
 
-- `route_option`: `SAFE_WALK`, `FAST_WALK`, `ACCESSIBLE_TRANSIT`
+- `SAFE_WALK`
+- `FAST_WALK`
+- `ACCESSIBLE_TRANSIT`
 
 ---
 
@@ -316,16 +323,16 @@ erDiagram
 
 | 한글명 | 영어명 | 타입 | NULL | DEFAULT |
 | --- | --- | --- | --- | --- |
-| 사용자 제보 ID | reportId | BIGSERIAL | NOT NULL |  |
-| 제보 유형 | report_type | ENUM | NOT NULL |  |
+| 사용자 제보 ID | reportId | INT | NOT NULL |  |
+| 제보 유형 | reportType | VARCHAR(30) | NOT NULL |  |
 | 설명 | description | TEXT | NULL |  |
-| 제보 위치 | report_point | GEOMETRY(POINT, 4326) | NOT NULL |  |
+| 제보 위치 | reportPoint | GEOMETRY(POINT, 4326) | NOT NULL |  |
 | 주소 | address | VARCHAR(255) | NULL |  |
-| 상태 | status | ENUM | NOT NULL | PENDING |
+| 상태 | status | VARCHAR(30) | NOT NULL | PENDING |
 
-### enum 값
+### 후보값
 
-- `report_type`: `CONSTRUCTION`, `OBSTACLE`, `DAMAGE`, `OTHER`
+- `reportType`: `CONSTRUCTION`, `OBSTACLE`, `DAMAGE`, `OTHER`
 - `status`: `PENDING`, `APPROVED`, `REJECTED`
 
 ### 비고
@@ -348,16 +355,16 @@ erDiagram
 
 | 한글명 | 영어명 | 타입 | NULL | DEFAULT |
 | --- | --- | --- | --- | --- |
-| 제보 이미지 ID | reportImgId | BIGSERIAL | NOT NULL |  |
-| 이미지 URL | image_url | TEXT | NOT NULL |  |
-| 표시 순서 | display_order | SMALLINT | NOT NULL | 0 |
-| 사용자 제보 ID | reportId | BIGINT | NOT NULL |  |
+| 제보 이미지 ID | reportImgId | INT | NOT NULL |  |
+| 이미지 URL | imageUrl | TEXT | NOT NULL |  |
+| 표시 순서 | displayOrder | SMALLINT | NOT NULL | 0 |
+| 사용자 제보 ID | reportId | INT | NOT NULL |  |
 
 ### 비고
 
 - 하나의 제보는 여러 이미지를 가질 수 있다.
 - 표시 순서 기준으로 이미지 노출 순서를 제어한다.
-- `UNIQUE (reportId, display_order)` 제약을 둔다.
+- `UNIQUE (reportId, displayOrder)` 제약을 둔다.
 
 ---
 
@@ -375,16 +382,23 @@ erDiagram
 
 | 한글명 | 영어명 | 타입 | NULL | DEFAULT |
 | --- | --- | --- | --- | --- |
-| 장소 ID | placeId | BIGSERIAL | NOT NULL |  |
+| 장소 ID | placeId | INT | NOT NULL |  |
 | 장소명 | name | VARCHAR(255) | NOT NULL |  |
-| 카테고리 | category | ENUM | NOT NULL |  |
+| 카테고리 | category | VARCHAR(50) | NOT NULL |  |
 | 주소 | address | VARCHAR(255) | NULL |  |
 | 좌표 | point | GEOMETRY(POINT, 4326) | NOT NULL |  |
 | 제공자 장소 ID | providerPlaceId | VARCHAR(100) | NULL |  |
 
-### enum 값
+### category 후보값
 
-- `category`: `RESTAURANT`, `TOURIST_SPOT`, `TOILET`, `BUS_STATION`, `ELEVATOR`, `CHARGING_STATION`, `BARRIER_FREE_FACILITY`, `ACCOMMODATION`
+- `RESTAURANT`
+- `TOURIST_SPOT`
+- `TOILET`
+- `BUS_STATION`
+- `ELEVATOR`
+- `CHARGING_STATION`
+- `BARRIER_FREE_FACILITY`
+- `ACCOMMODATION`
 
 ### 비고
 
@@ -406,26 +420,26 @@ erDiagram
 
 | 한글명 | 영어명 | 타입 | NULL | DEFAULT |
 | --- | --- | --- | --- | --- |
-| 접근성 속성 ID | id | BIGSERIAL | NOT NULL |  |
-| 장소 ID | placeId | BIGINT | NOT NULL |  |
-| 속성 유형 | feature_type | VARCHAR(50) | NOT NULL |  |
-| 제공 여부 | is_available | BOOLEAN | NOT NULL | false |
+| 접근성 속성 ID | id | INT | NOT NULL |  |
+| 장소 ID | placeId | INT | NOT NULL |  |
+| 속성 유형 | featureType | VARCHAR(50) | NOT NULL |  |
+| 제공 여부 | isAvailable | BOOLEAN | NOT NULL | false |
 
-### feature_type 후보값
+### featureType 후보값
 
 - `ramp`
-- `auto_door`
+- `autoDoor`
 - `elevator`
-- `accessible_toilet`
-- `charging_station`
-- `step_free`
+- `accessibleToilet`
+- `chargingStation`
+- `stepFree`
 
 ### 비고
 
 - `RESTAURANT`, `TOURIST_SPOT`, `ACCOMMODATION` 같은 장소는 여러 접근성 속성을 가질 수 있으므로 **1:N 관계**로 설계되어 있다.
 - 장소 자체가 `ELEVATOR`, `CHARGING_STATION` 같은 시설인 경우 같은 feature를 중복 저장하지 않는다.
 - `elevator`는 음식점, 관광지, 숙박 등 다른 장소의 부가 접근성 속성으로도 관리할 수 있다.
-- `UNIQUE (placeId, feature_type)` 제약을 둔다.
+- `UNIQUE (placeId, featureType)` 제약을 둔다.
 
 ---
 
@@ -441,14 +455,14 @@ erDiagram
 
 | 한글명 | 영어명 | 타입 | NULL | DEFAULT |
 | --- | --- | --- | --- | --- |
-| 정점 ID | vertexId | BIGSERIAL | NOT NULL |  |
-| OSM 노드 ID | osm_node_id | BIGINT | NOT NULL |  |
+| 정점 ID | vertexId | BIGINT | NOT NULL |  |
+| OSM 노드 ID | osmNodeId | BIGINT | NOT NULL |  |
 | 노드 좌표 | point | GEOMETRY(POINT, 4326) | NOT NULL |  |
 
 ### 비고
 
-- `road_nodes`에는 모든 OSM node를 적재하지 않는다.
-- `road_segments`의 시작/종료점으로 실제 사용된 anchor node만 저장한다.
+- `roadNodes`에는 모든 OSM node를 적재하지 않는다.
+- `roadSegments`의 시작/종료점으로 실제 사용된 anchor node만 저장한다.
 
 ---
 
@@ -466,43 +480,46 @@ erDiagram
 
 | 한글명 | 영어명 | 타입 | NULL | DEFAULT |
 | --- | --- | --- | --- | --- |
-| 간선 ID | edgeId | BIGSERIAL | NOT NULL |  |
-| 시작 노드 ID | from_node_id | BIGINT | NOT NULL |  |
-| 종료 노드 ID | to_node_id | BIGINT | NOT NULL |  |
+| 간선 ID | edgeId | BIGINT | NOT NULL |  |
+| 시작 노드 ID | fromNodeId | BIGINT | NOT NULL |  |
+| 종료 노드 ID | toNodeId | BIGINT | NOT NULL |  |
 | 선형 좌표 | geom | GEOMETRY(LINESTRING, 4326) | NOT NULL |  |
-| 길이(미터) | length_meter | NUMERIC(10,2) | NOT NULL |  |
-| 원천 OSM way ID | source_way_id | BIGINT | NOT NULL |  |
-| 원천 시작 OSM node ID | source_osm_from_node_id | BIGINT | NOT NULL |  |
-| 원천 종료 OSM node ID | source_osm_to_node_id | BIGINT | NOT NULL |  |
-| 세그먼트 순번 | segment_ordinal | INT | NOT NULL |  |
-| 보행 가능 상태 | walk_access | VARCHAR(30) | NOT NULL | UNKNOWN |
-| 평균 경사도(%) | avg_slope_percent | NUMERIC(6,2) | NULL |  |
-| 보행 폭(미터) | width_meter | NUMERIC(6,2) | NULL |  |
-| 점자블록 상태 | braille_block_state | ENUM | NOT NULL | UNKNOWN |
-| 음향신호기 상태 | audio_signal_state | ENUM | NOT NULL | UNKNOWN |
-| 경사로 상태 | curb_ramp_state | ENUM | NOT NULL | UNKNOWN |
-| 폭 상태 | width_state | ENUM | NOT NULL | UNKNOWN |
-| 노면 상태 | surface_state | ENUM | NOT NULL | UNKNOWN |
-| 계단 상태 | stairs_state | ENUM | NOT NULL | UNKNOWN |
-| 엘리베이터 상태 | elevator_state | ENUM | NOT NULL | UNKNOWN |
-| 횡단 상태 | crossing_state | ENUM | NOT NULL | UNKNOWN |
+| 길이(미터) | lengthMeter | NUMERIC(10,2) | NOT NULL |  |
+| 원천 OSM way ID | sourceWayId | BIGINT | NOT NULL |  |
+| 원천 시작 OSM node ID | sourceOsmFromNodeId | BIGINT | NOT NULL |  |
+| 원천 종료 OSM node ID | sourceOsmToNodeId | BIGINT | NOT NULL |  |
+| 세그먼트 순번 | segmentOrdinal | INT | NOT NULL |  |
+| 보행 가능 상태 | walkAccess | VARCHAR(30) | NOT NULL | UNKNOWN |
+| 평균 경사도(%) | avgSlopePercent | NUMERIC(6,2) | NULL |  |
+| 보행 폭(미터) | widthMeter | NUMERIC(6,2) | NULL |  |
+| 점자블록 상태 | brailleBlockState | ENUM | NOT NULL | UNKNOWN |
+| 음향신호기 상태 | audioSignalState | ENUM | NOT NULL | UNKNOWN |
+| 경사로 상태 | curbRampState | ENUM | NOT NULL | UNKNOWN |
+| 폭 상태 | widthState | ENUM | NOT NULL | UNKNOWN |
+| 노면 상태 | surfaceState | VARCHAR(30) | NOT NULL | UNKNOWN |
+| 계단 상태 | stairsState | ENUM | NOT NULL | UNKNOWN |
+| 엘리베이터 상태 | elevatorState | ENUM | NOT NULL | UNKNOWN |
+| 횡단 상태 | crossingState | ENUM | NOT NULL | UNKNOWN |
 
 ### enum 값
 
-- `braille_block_state`, `audio_signal_state`, `curb_ramp_state`, `stairs_state`, `elevator_state`: `YES`, `NO`, `UNKNOWN`
-- `width_state`: `ADEQUATE_150`, `ADEQUATE_120`, `NARROW`, `UNKNOWN`
-- `surface_state`: `PAVED`, `GRAVEL`, `UNPAVED`, `OTHER`, `UNKNOWN`
-- `crossing_state`: `TRAFFIC_SIGNALS`, `UNCONTROLLED`, `UNMARKED`, `NO`, `UNKNOWN`
+- `brailleBlockState`, `audioSignalState`, `curbRampState`, `stairsState`, `elevatorState`: `YES`, `NO`, `UNKNOWN`
+- `widthState`: `ADEQUATE_150`, `ADEQUATE_120`, `NARROW`, `UNKNOWN`
+- `surfaceState` 후보값: `PAVED`, `GRAVEL`, `UNPAVED`, `BLOCK`, `TACTILE_BLOCK`, `OTHER`, `UNKNOWN`
+- `crossingState`: `TRAFFIC_SIGNALS`, `NO`, `UNKNOWN`
 
 ### 비고
 
 - 이 테이블은 보행 네트워크의 실제 길 구간을 표현하며, 여러 간선을 조합해 최종 경로를 계산한다.
-- 안정 식별 기준은 `source_way_id + source_osm_from_node_id + source_osm_to_node_id`이며 `segment_ordinal`은 보조 검증용이다.
-- 기존 boolean 중심 컬럼(`has_stairs`, `has_curb_gap`, `has_elevator`, `has_crosswalk`, `has_signal`, `has_audio_signal`, `has_braille_block`, `surface_type`)은 블루프린트 기준 상태 enum 컬럼으로 대체한다.
-- `avg_slope_percent`, `width_meter`는 ETL 계산값으로 유지한다.
-- 프로필별 경사 통과 여부(`visual_safe`, `visual_fast`, `wheelchair_safe`, `wheelchair_fast`)는 `road_segments` 컬럼으로 저장하지 않고 GraphHopper import 또는 EV 채움 단계에서 `avg_slope_percent`를 해석해 파생값으로 계산한다.
-- 상세 feature 매칭 결과나 표시용 개별 객체는 `segment_features`에 저장하고, `road_segments`에는 최종 해석 결과만 반영한다.
-- `UNIQUE (source_way_id, source_osm_from_node_id, source_osm_to_node_id)` 제약을 둔다.
+- 안정 식별 기준은 `sourceWayId + sourceOsmFromNodeId + sourceOsmToNodeId`이며 `segmentOrdinal`은 보조 검증용이다.
+- `YES/NO/UNKNOWN` 또는 이에 준하는 고정 상태값은 라우팅 로직의 폐쇄 집합으로 판단하여 ENUM을 유지한다.
+- `surfaceState`는 현장 데이터 소스와 운영 기준에 따라 후보값이 늘어날 수 있으므로 ENUM 대신 `VARCHAR`로 관리한다.
+- `crossingState`는 현재 라우팅 판단 기준에서 "신호등 있는 횡단", "신호등 없는 횡단 또는 횡단 불가", "알 수 없음"만 구분하면 충분하므로 `TRAFFIC_SIGNALS`, `NO`, `UNKNOWN`만 유지한다.
+- 기존 boolean 중심 컬럼(`hasStairs`, `hasCurbGap`, `hasElevator`, `hasCrosswalk`, `hasSignal`, `hasAudioSignal`, `hasBrailleBlock`, `surfaceType`)은 블루프린트 기준 상태 컬럼으로 대체한다.
+- `avgSlopePercent`, `widthMeter`는 ETL 계산값으로 유지한다.
+- 프로필별 경사 통과 여부(`visualSafe`, `visualFast`, `wheelchairSafe`, `wheelchairFast`)는 `roadSegments` 컬럼으로 저장하지 않고 GraphHopper import 또는 EV 채움 단계에서 `avgSlopePercent`를 해석해 파생값으로 계산한다.
+- 상세 feature 매칭 결과나 표시용 개별 객체는 `segmentFeatures`에 저장하고, `roadSegments`에는 최종 해석 결과만 반영한다.
+- `UNIQUE (sourceWayId, sourceOsmFromNodeId, sourceOsmToNodeId)` 제약을 둔다.
 
 ---
 
@@ -510,7 +527,7 @@ erDiagram
 
 ### 역할
 
-`road_segments`에 매칭된 개별 feature 객체를 저장한다.
+`roadSegments`에 매칭된 개별 feature 객체를 저장한다.
 
 횡단보도, 점자블록, 음향신호기, 경사도 측정값 같은 원천 feature를 edge 단위로 추적하거나 지도에 표시할 때 사용한다.
 
@@ -518,18 +535,18 @@ erDiagram
 
 | 한글명 | 영어명 | 타입 | NULL | DEFAULT |
 | --- | --- | --- | --- | --- |
-| feature 식별자 | feature_id | BIGSERIAL | NOT NULL |  |
-| 소속 edge | edge_id | BIGINT | NOT NULL |  |
-| feature 종류 | feature_type | VARCHAR(50) | NOT NULL |  |
+| feature 식별자 | featureId | BIGINT | NOT NULL |  |
+| 소속 edge | edgeId | BIGINT | NOT NULL |  |
+| feature 종류 | featureType | VARCHAR(50) | NOT NULL |  |
 | 표시 위치/구간 | geom | GEOMETRY(GEOMETRY, 4326) | NOT NULL |  |
 | 세부 값 | value | JSONB | NULL |  |
 
 ### 비고
 
-- `road_segments 1 : N segment_features` 관계를 가진다.
+- `roadSegments 1 : N segmentFeatures` 관계를 가진다.
 - `geom`은 feature 성격에 따라 `POINT`, `LINESTRING` 등으로 저장할 수 있도록 범용 geometry 타입을 사용한다.
 - `value`는 `3.0`, `true`, 추가 메타데이터 등을 함께 담을 수 있도록 `JSONB`로 둔다.
-- `feature_type` 예시는 `CROSSWALK`, `AUDIO_SIGNAL`, `BRAILLE_BLOCK`, `CURB_RAMP`, `ELEVATOR`, `SLOPE`, `WIDTH`다.
+- `featureType` 예시는 `CROSSWALK`, `AUDIO_SIGNAL`, `BRAILLE_BLOCK`, `CURB_RAMP`, `ELEVATOR`, `SLOPE`, `WIDTH`다.
 
 ---
 
@@ -545,23 +562,24 @@ erDiagram
 
 | 한글명 | 영어명 | 타입 | NULL | DEFAULT |
 | --- | --- | --- | --- | --- |
-| 경로 로그 ID | routeLogId | BIGSERIAL | NOT NULL |  |
-| 장애 유형 | disability_type | ENUM | NOT NULL |  |
-| 경로 종류 | route_option | ENUM | NOT NULL | SAFE_WALK |
-| 시작 시각 | started_at | TIMESTAMPTZ | NOT NULL |  |
-| 종료 시각 | ended_at | TIMESTAMPTZ | NOT NULL |  |
-| 실제 이동 거리(미터) | distance_meter | NUMERIC(10,2) | NULL |  |
+| 경로 로그 ID | routeLogId | BIGINT | NOT NULL |  |
+| 장애 유형 | disabilityType | VARCHAR(30) | NOT NULL |  |
+| 경로 종류 | routeOption | VARCHAR(30) | NOT NULL | SAFE_WALK |
+| 시작 시각 | startedAt | VARCHAR(30) | NOT NULL |  |
+| 종료 시각 | endedAt | VARCHAR(30) | NOT NULL |  |
+| 실제 이동 거리(미터) | distanceMeter | NUMERIC(10,2) | NULL |  |
 
-### enum 값
+### 후보값
 
-- `disability_type`: `VISUAL`, `MOBILITY`
-- `route_option`: `SAFE_WALK`, `FAST_WALK`, `ACCESSIBLE_TRANSIT`
+- `disabilityType`: `VISUAL`, `MOBILITY`
+- `routeOption`: `SAFE_WALK`, `FAST_WALK`, `ACCESSIBLE_TRANSIT`
 
 ### 비고
 
 - 사용자 또는 기기 단위 식별자를 저장하지 않는다.
 - 사용자가 경로 데이터 수집에 동의하지 않은 경우 저장하지 않는다.
-- 실제 GPS 좌표 목록은 `route_log_points`에 저장한다.
+- 시간 문자열은 ISO 8601 기준으로 저장한다.
+- 실제 GPS 좌표 목록은 `routeLogPoints`에 저장한다.
 
 ---
 
@@ -569,22 +587,23 @@ erDiagram
 
 ### 역할
 
-`route_logs`에 속한 실제 이동 GPS 좌표 목록을 저장한다.
+`routeLogs`에 속한 실제 이동 GPS 좌표 목록을 저장한다.
 
 ### 컬럼 명세
 
 | 한글명 | 영어명 | 타입 | NULL | DEFAULT |
 | --- | --- | --- | --- | --- |
-| 경로 로그 포인트 ID | routeLogPointId | BIGSERIAL | NOT NULL |  |
+| 경로 로그 포인트 ID | routeLogPointId | BIGINT | NOT NULL |  |
 | 경로 로그 ID | routeLogId | BIGINT | NOT NULL |  |
 | 좌표 순서 | sequence | INT | NOT NULL |  |
 | GPS 좌표 | point | GEOMETRY(POINT, 4326) | NOT NULL |  |
-| 기록 시각 | recorded_at | TIMESTAMPTZ | NOT NULL |  |
-| GPS 정확도(미터) | accuracy_meter | NUMERIC(8,2) | NULL |  |
+| 기록 시각 | recordedAt | VARCHAR(30) | NOT NULL |  |
+| GPS 정확도(미터) | accuracyMeter | NUMERIC(8,2) | NULL |  |
 
 ### 비고
 
 - 하나의 경로 로그는 여러 GPS 포인트를 가질 수 있다.
+- 시간 문자열은 ISO 8601 기준으로 저장한다.
 - 좌표 순서 중복을 막기 위해 `UNIQUE (routeLogId, sequence)` 제약을 둔다.
 
 ---
@@ -675,7 +694,7 @@ MOBILITY 사용자의 ACCESSIBLE_TRANSIT 경로에서 ODsay가 주는 역 중심
 
 | 한글명 | 영어명 | 타입 | NULL | DEFAULT |
 | --- | --- | --- | --- | --- |
-| 엘리베이터 ID | elevatorId | BIGSERIAL | NOT NULL |  |
+| 엘리베이터 ID | elevatorId | INT | NOT NULL |  |
 | 역 식별자 (부산교통공사 기준) | stationId | VARCHAR(20) | NOT NULL |  |
 | 역명 | stationName | VARCHAR(100) | NOT NULL |  |
 | 호선명 | lineName | VARCHAR(50) | NOT NULL |  |
@@ -698,4 +717,4 @@ MOBILITY 사용자의 ACCESSIBLE_TRANSIT 경로에서 ODsay가 주는 역 중심
 
 ### 관계
 
-- `subway_station_elevators N : 1 station` (stationId 기준, 별도 station 테이블 없이 stationId로 grouping)
+- `subway_station_elevators N : 1 station` (`stationId` 기준, 별도 station 테이블 없이 `stationId`로 grouping)
